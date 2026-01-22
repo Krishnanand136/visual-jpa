@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="
+           http://maven.apache.org/POM/4.0.0
+           http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>io.github.visual-jpa</groupId>
+		<version>0.1.0-SNAPSHOT</version>
+		<artifactId>visual-jpa</artifactId>
+	</parent>
+	<!-- Project coordinates -->
+	<artifactId>visual-jpa-core</artifactId>
+	<packaging>pom</packaging>
+	<name>visual-jpa-core</name>
+
+
+
+	<description>
+		Visual understanding of JPA and Hibernate at design time and runtime
+	</description>
+
+	<url>https://github.com/visual-jpa/visual-jpa-core</url>
+
+
+	<!-- Global properties -->
+	<build>
+		<pluginManagement>
+			<plugins>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.13.0</version>
+					<configuration>
+						<release>${java.version}</release>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+</project>
