@@ -27,7 +27,7 @@
 
 	<!-- Global properties -->
 	<properties>
-		<java.version>17</java.version>
+		<java.version>24</java.version>
 		<spring.version>6.2.1</spring.version>
 		<hibernate.version>6.6.26.Final</hibernate.version>
 		<slf4j.version>2.0.17</slf4j.version>
@@ -88,13 +88,20 @@
 
 		</dependencies>
 	</dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>6.2.12</version>
+        </dependency>
+    </dependencies>
 
-	<!-- Plugin management -->
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.14.1</version>
 				<configuration>
 					<release>${java.version}</release>
 				</configuration>
