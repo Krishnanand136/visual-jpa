@@ -13,7 +13,7 @@
 	</parent>
 	<!-- Project coordinates -->
 	<artifactId>visual-jpa-core</artifactId>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 	<name>visual-jpa-core</name>
 
 
@@ -24,11 +24,16 @@
 
 	<url>https://github.com/visual-jpa/visual-jpa-core</url>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-jfr</artifactId>
+		</dependency>
+	</dependencies>
 
 	<!-- Global properties -->
 	<build>
 			<plugins>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
