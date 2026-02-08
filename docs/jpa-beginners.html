@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JPA + Hibernate: The What and Why</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" />
+
+  <style>
+    :root {
+      --r-heading-font: "Playfair Display", "Georgia", serif;
+      --r-main-font: "Space Grotesk", "Helvetica", sans-serif;
+      --ink: #f8f7f4;
+      --accent: #ffb703;
+      --accent-2: #8ecae6;
+      --accent-3: #fb8500;
+      --accent-4: #9b5de5;
+      --bg-1: #0b0f1a;
+      --bg-2: #0f1c2e;
+    }
+
+    .reveal {
+      background: radial-gradient(1200px 800px at 10% 10%, #1b2640 0%, #0b0f1a 45%, #070b12 100%);
+      color: var(--ink);
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal section h1,
+    .reveal section h2,
+    .reveal section h3 {
+      letter-spacing: 0.5px;
+    }
+
+    .muted {
+      opacity: 0.72;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 183, 3, 0.15);
+      color: var(--accent);
+      font-size: 0.7em;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .story-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 18px 22px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(142, 202, 230, 0.2);
+      border: 1px solid rgba(142, 202, 230, 0.5);
+      color: #bfe9ff;
+      font-size: 0.7em;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .highlight {
+      color: var(--accent);
+    }
+
+    .svg-wrap {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .caption {
+      font-size: 0.6em;
+      opacity: 0.75;
+      margin-top: 10px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+    }
+
+    .stat {
+      font-size: 2.1em;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .code-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .code-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .code-card {
+      background: rgba(11, 15, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 18px 34px rgba(0, 0, 0, 0.25);
+    }
+
+    .code-card h3 {
+      margin-top: 0;
+      color: var(--accent-2);
+      letter-spacing: 0.04em;
+    }
+
+    .code-block {
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      font-size: 0.62em;
+      line-height: 1.5;
+    }
+
+    .scroll-slide {
+      max-height: 82vh;
+      overflow-y: auto;
+      padding-right: 12px;
+    }
+
+    .scroll-slide::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .scroll-slide::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+    }
+
+    .scroll-slide::-webkit-scrollbar-thumb {
+      background: rgba(255, 183, 3, 0.6);
+      border-radius: 10px;
+    }
+
+    .code-conn {
+      color: #8ecae6;
+    }
+
+    .code-sql {
+      color: #ffb703;
+    }
+
+    .code-bind {
+      color: #ff006e;
+    }
+
+    .code-exec {
+      color: #90be6d;
+    }
+
+    .code-obj {
+      color: #b5179e;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <div class="hero">
+          <div>
+            <span class="tag">Story Mode</span>
+            <h1>JPA + Hibernate</h1>
+            <h3 class="muted">The What and Why, told as a system story</h3>
+            <p class="muted">Raj, an e-commerce engineer, meets object-relational reality.</p>
+          </div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 360 260" width="100%" height="260" role="img" aria-label="Raj and storefront">
+              <defs>
+                <linearGradient id="store" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#8ecae6" />
+                  <stop offset="100%" stop-color="#219ebc" />
+                </linearGradient>
+                <linearGradient id="person" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ffb703" />
+                  <stop offset="100%" stop-color="#fb8500" />
+                </linearGradient>
+              </defs>
+              <rect x="10" y="20" width="210" height="160" rx="18" fill="url(#store)" opacity="0.9"/>
+              <rect x="30" y="50" width="170" height="80" rx="10" fill="#0b0f1a" opacity="0.7"/>
+              <rect x="50" y="140" width="50" height="40" rx="6" fill="#ffb703"/>
+              <rect x="120" y="140" width="50" height="40" rx="6" fill="#ffb703"/>
+              <text x="40" y="95" fill="#f8f7f4" font-size="18" font-family="Space Grotesk">Raj's Store</text>
+              <circle cx="280" cy="110" r="35" fill="url(#person)"/>
+              <rect x="260" y="150" width="40" height="70" rx="18" fill="url(#person)"/>
+              <text x="248" y="230" fill="#f8f7f4" font-size="14" font-family="Space Grotesk">Raj</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Raj’s Product Universe</h2>
+        <div class="story-grid">
+          <div class="card">
+            <p class="muted">Customer side</p>
+            <div class="pill-list">
+              <span class="pill">User Account</span>
+              <span class="pill">Cart</span>
+              <span class="pill">Orders</span>
+              <span class="pill">Addresses</span>
+              <span class="pill">Payments</span>
+              <span class="pill">Promotions</span>
+              <span class="pill">Reviews</span>
+            </div>
+          </div>
+          <div class="card">
+            <p class="muted">Vendor side</p>
+            <div class="pill-list">
+              <span class="pill">Vendors</span>
+              <span class="pill">Products</span>
+              <span class="pill">Categories</span>
+              <span class="pill">Inventory</span>
+              <span class="pill">Delivery Partners</span>
+              <span class="pill">Returns</span>
+              <span class="pill">Analytics</span>
+            </div>
+          </div>
+        </div>
+        <p class="caption">Each pill becomes a table. Each table becomes relationships. The graph grows fast.</p>
+      </section>
+
+      <section>
+        <h2>The Linkage Explosion</h2>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 800 360" width="100%" height="320" role="img" aria-label="Entity relationship web">
+            <defs>
+              <linearGradient id="nodeA" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#8ecae6" />
+                <stop offset="100%" stop-color="#219ebc" />
+              </linearGradient>
+              <linearGradient id="nodeB" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffb703" />
+                <stop offset="100%" stop-color="#fb8500" />
+              </linearGradient>
+              <linearGradient id="nodeC" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#9b5de5" />
+                <stop offset="100%" stop-color="#5e60ce" />
+              </linearGradient>
+            </defs>
+            <rect x="20" y="30" width="200" height="70" rx="12" fill="url(#nodeA)"/>
+            <rect x="290" y="20" width="200" height="70" rx="12" fill="url(#nodeB)"/>
+            <rect x="560" y="30" width="200" height="70" rx="12" fill="url(#nodeC)"/>
+            <rect x="60" y="140" width="200" height="70" rx="12" fill="url(#nodeB)"/>
+            <rect x="320" y="150" width="200" height="70" rx="12" fill="url(#nodeC)"/>
+            <rect x="590" y="150" width="200" height="70" rx="12" fill="url(#nodeA)"/>
+            <rect x="200" y="260" width="200" height="70" rx="12" fill="url(#nodeC)"/>
+            <rect x="480" y="260" width="200" height="70" rx="12" fill="url(#nodeB)"/>
+
+            <g stroke="#f8f7f4" stroke-width="2" opacity="0.6">
+              <line x1="220" y1="65" x2="290" y2="55"/>
+              <line x1="490" y1="55" x2="560" y2="65"/>
+              <line x1="120" y1="175" x2="320" y2="185"/>
+              <line x1="520" y1="185" x2="590" y2="185"/>
+              <line x1="150" y1="105" x2="120" y2="140"/>
+              <line x1="390" y1="90" x2="420" y2="150"/>
+              <line x1="660" y1="100" x2="690" y2="150"/>
+              <line x1="260" y1="210" x2="260" y2="260"/>
+              <line x1="420" y1="220" x2="520" y2="260"/>
+              <line x1="620" y1="220" x2="580" y2="260"/>
+            </g>
+
+            <text x="70" y="75" fill="#0b0f1a" font-size="16">User</text>
+            <text x="330" y="65" fill="#0b0f1a" font-size="16">Orders</text>
+            <text x="610" y="75" fill="#0b0f1a" font-size="16">Vendors</text>
+            <text x="90" y="185" fill="#0b0f1a" font-size="16">Cart</text>
+            <text x="350" y="195" fill="#0b0f1a" font-size="16">Products</text>
+            <text x="620" y="195" fill="#0b0f1a" font-size="16">Delivery</text>
+            <text x="230" y="305" fill="#0b0f1a" font-size="16">Payments</text>
+            <text x="510" y="305" fill="#0b0f1a" font-size="16">Reviews</text>
+          </svg>
+        </div>
+        <p class="caption">Every new feature adds edges. The object graph turns into a query maze.</p>
+      </section>
+
+      <section class="scroll-slide">
+        <h2>CRUD Using JDBC</h2>
+        <div class="code-grid">
+          <div class="code-card">
+            <h3>CREATE</h3>
+            <pre class="code-block"><code class="language-java"><span class="code-conn">Connection conn</span> = dataSource.getConnection();
+
+PreparedStatement ps = conn.prepareStatement(
+  <span class="code-sql">"INSERT INTO users(name, email) VALUES(?, ?)"</span>,
+  Statement.RETURN_GENERATED_KEYS
+);
+<span class="code-bind">ps.setString(1, user.getName());</span>
+<span class="code-bind">ps.setString(2, user.getEmail());</span>
+<span class="code-exec">ps.executeUpdate();</span></code></pre>
+          </div>
+          <div class="code-card">
+            <h3>UPDATE</h3>
+            <pre class="code-block"><code class="language-java"><span class="code-conn">Connection conn</span> = dataSource.getConnection();
+
+PreparedStatement u = conn.prepareStatement(
+  <span class="code-sql">"UPDATE users SET name = ?, email = ? WHERE id = ?"</span>
+);
+<span class="code-bind">u.setString(1, user.getName());</span>
+<span class="code-bind">u.setString(2, user.getEmail());</span>
+<span class="code-bind">u.setLong(3, user.getId());</span>
+<span class="code-exec">u.executeUpdate();</span></code></pre>
+          </div>
+          <div class="code-card">
+            <h3>READ (Name or Email)</h3>
+            <pre class="code-block"><code class="language-java"><span class="code-conn">Connection conn</span> = dataSource.getConnection();
+
+PreparedStatement q = conn.prepareStatement(
+  <span class="code-sql">"SELECT id, name, email FROM users WHERE name = ? OR email = ?"</span>
+);
+<span class="code-bind">q.setString(1, "Raj");</span>
+<span class="code-bind">q.setString(2, "raj@shop.com");</span>
+<span class="code-exec">ResultSet rs = q.executeQuery();</span></code></pre>
+          </div>
+        </div>
+        <p class="caption">Color key: connection, SQL, binding, execution.</p>
+      </section>
+
+      <section>
+        <h2>Then the Traffic Explosion</h2>
+        <div class="two-col">
+          <div class="card">
+            <p class="muted">A million-follower influencer shared the site.</p>
+            <div class="stat">+1,000,000</div>
+            <p class="muted">New visitors in hours.</p>
+          </div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 360 240" width="100%" height="240" role="img" aria-label="Traffic spike graph">
+              <rect x="20" y="20" width="320" height="200" rx="16" fill="#0f1c2e"/>
+              <polyline points="40,180 90,170 140,160 190,145 240,110 290,60 320,40"
+                        fill="none" stroke="#ffb703" stroke-width="6" />
+              <circle cx="320" cy="40" r="8" fill="#ffb703"/>
+              <text x="40" y="50" fill="#f8f7f4" font-size="14">Traffic</text>
+            </svg>
+          </div>
+        </div>
+        <p class="caption">Sudden load exposes brittle query paths and scaling bottlenecks.</p>
+      </section>
+
+      <section>
+        <h2>The Database Swap Moment</h2>
+        <div class="story-grid">
+          <div class="card">
+            <p>Raj moves from MySQL to Postgres (story moment).</p>
+            <p class="muted">Better indexing, better concurrency—at least in his narrative.</p>
+            <p class="muted">But SQL dialect differences threaten every query.</p>
+          </div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 360 240" width="100%" height="240" role="img" aria-label="Database switch">
+              <rect x="30" y="30" width="120" height="180" rx="16" fill="#219ebc"/>
+              <rect x="210" y="30" width="120" height="180" rx="16" fill="#5e60ce"/>
+              <text x="60" y="120" fill="#0b0f1a" font-size="16">MySQL</text>
+              <text x="235" y="120" fill="#f8f7f4" font-size="16">Postgres</text>
+              <path d="M155 120 C 175 90, 185 90, 205 120" fill="none" stroke="#ffb703" stroke-width="6"/>
+              <polygon points="205,120 190,110 190,130" fill="#ffb703"/>
+            </svg>
+          </div>
+        </div>
+        <p class="caption">If SQL changes, every hand-written query becomes a risk.</p>
+      </section>
+
+      <section class="scroll-slide">
+        <h2>What Breaks in a DB Swap</h2>
+        <div class="card">
+          <ul>
+            <li>SQL syntax differences (LIMIT/OFFSET, UPSERTs, JSON operators).</li>
+            <li>Data types don’t map 1:1 (timestamps, booleans, enums).</li>
+            <li>Index and constraint semantics change.</li>
+            <li>Transaction isolation defaults differ.</li>
+            <li>Query plans and performance characteristics shift.</li>
+            <li>Every hand-written query must be audited and tested.</li>
+          </ul>
+        </div>
+        <p class="caption">A codebase full of SQL means a migration is a risky rewrite.</p>
+      </section>
+
+      <section>
+        <h2>Where JPA + Hibernate Step In</h2>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 860 260" width="100%" height="240" role="img" aria-label="ORM bridge">
+            <rect x="20" y="60" width="220" height="120" rx="18" fill="#8ecae6"/>
+            <rect x="320" y="40" width="220" height="160" rx="18" fill="#ffb703"/>
+            <rect x="620" y="60" width="220" height="120" rx="18" fill="#5e60ce"/>
+            <text x="70" y="130" fill="#0b0f1a" font-size="18">Objects</text>
+            <text x="350" y="130" fill="#0b0f1a" font-size="18">JPA + Hibernate</text>
+            <text x="680" y="130" fill="#f8f7f4" font-size="18">SQL</text>
+            <line x1="240" y1="120" x2="320" y2="120" stroke="#f8f7f4" stroke-width="4" />
+            <line x1="540" y1="120" x2="620" y2="120" stroke="#f8f7f4" stroke-width="4" />
+            <circle cx="280" cy="120" r="6" fill="#f8f7f4"/>
+            <circle cx="580" cy="120" r="6" fill="#f8f7f4"/>
+          </svg>
+        </div>
+        <p class="caption">Code speaks in objects. Hibernate adapts to the database dialect.</p>
+      </section>
+
+      <section>
+        <h2>What It Automates</h2>
+        <div class="story-grid">
+          <div class="card">
+            <p class="muted">You write</p>
+            <ul>
+              <li>Domain objects</li>
+              <li>Relationships</li>
+              <li>Transactions</li>
+            </ul>
+          </div>
+          <div class="card">
+            <p class="muted">Hibernate handles</p>
+            <ul>
+              <li>SQL generation</li>
+              <li>Entity state tracking</li>
+              <li>Mapping + joins</li>
+              <li>Dialect differences</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="scroll-slide">
+        <h2>CRUD with JPA + Hibernate</h2>
+        <div class="code-grid-2">
+          <div class="code-card">
+            <h3>CrudRepository</h3>
+            <pre class="code-block"><code class="language-java">interface UserRepo extends CrudRepository&lt;User, Long&gt; {
+  List&lt;User&gt; findByNameOrEmail(String name, String email);
+}
+
+// CREATE
+repo.save(user);
+
+// READ
+User user = repo.findById(id).orElse(null);
+List&lt;User&gt; matches = repo.findByNameOrEmail("Raj", "raj@shop.com");
+
+// UPDATE
+user.setEmail("new@email.com");
+repo.save(user);
+
+// DELETE
+repo.deleteById(id);</code></pre>
+          </div>
+          <div class="code-card">
+            <h3>EntityManager</h3>
+            <pre class="code-block"><code class="language-java">@Entity
+class User {
+  @Id @GeneratedValue Long id;
+  String name;
+  String email;
+}
+
+// CREATE
+entityManager.persist(user);
+
+// READ
+User user = entityManager.find(User.class, id);
+
+// UPDATE
+user.setEmail("new@email.com");
+// dirty checking on commit
+
+// DELETE
+entityManager.remove(user);</code></pre>
+          </div>
+        </div>
+        <p class="caption">Repository style is concise; EntityManager is the core JPA API.</p>
+      </section>
+
+      <section>
+        <h2>But There’s a Trade-Off</h2>
+        <div class="two-col">
+          <div class="card">
+            <p class="muted">You gain speed</p>
+            <p class="stat">Faster feature delivery</p>
+          </div>
+          <div class="card">
+            <p class="muted">You lose visibility</p>
+            <p class="stat">Hidden queries</p>
+          </div>
+        </div>
+        <p class="caption">JPA optimizes developer time, not raw database performance.</p>
+      </section>
+
+      <section>
+        <h2>Key Takeaway</h2>
+        <p>JPA is the contract.</p>
+        <p>Hibernate is the engine.</p>
+        <p>It trades control for productivity.</p>
+      </section>
+
+      <section>
+        <h2>If You Remember One Thing</h2>
+        <p>Hibernate is a state machine watching your objects.</p>
+        <p>It turns object changes into SQL at transaction boundaries.</p>
+      </section>
+
+      <section>
+        <h2>End</h2>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JPA Issues and Advantages</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" />
+
+  <style>
+    :root {
+      --r-heading-font: "Playfair Display", "Georgia", serif;
+      --r-main-font: "Space Grotesk", "Helvetica", sans-serif;
+      --ink: #f8f7f4;
+      --accent: #ffb703;
+      --accent-2: #8ecae6;
+      --accent-3: #fb8500;
+      --accent-4: #9b5de5;
+      --bg-1: #0b0f1a;
+      --bg-2: #0f1c2e;
+    }
+
+    .reveal {
+      background: radial-gradient(1200px 800px at 10% 10%, #1b2640 0%, #0b0f1a 45%, #070b12 100%);
+      color: var(--ink);
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal section h1,
+    .reveal section h2,
+    .reveal section h3 {
+      letter-spacing: 0.5px;
+    }
+
+    .muted {
+      opacity: 0.72;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 183, 3, 0.15);
+      color: var(--accent);
+      font-size: 0.7em;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 18px 22px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .code-card {
+      background: rgba(11, 15, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 18px 34px rgba(0, 0, 0, 0.25);
+    }
+
+    .code-card h3 {
+      margin-top: 0;
+      color: var(--accent-2);
+      letter-spacing: 0.04em;
+    }
+
+    .code-block {
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      font-size: 0.62em;
+      line-height: 1.5;
+    }
+
+    .caption {
+      font-size: 0.6em;
+      opacity: 0.75;
+      margin-top: 10px;
+    }
+
+    .scroll-slide {
+      max-height: 82vh;
+      overflow-y: auto;
+      padding-right: 12px;
+    }
+
+    .scroll-slide::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .scroll-slide::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+    }
+
+    .scroll-slide::-webkit-scrollbar-thumb {
+      background: rgba(255, 183, 3, 0.6);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <span class="tag">JPA Issues + Advantages</span>
+        <h1>N+1 Problem</h1>
+        <p class="muted">Vendor → Products → Stock</p>
+      </section>
+
+      <section>
+        <h2>Entity: Vendor</h2>
+        <div class="code-card">
+          <pre class="code-block"><code class="language-java">@Entity
+class Vendor {
+  @Id @GeneratedValue
+  Long id;
+  String name;
+
+  @OneToMany(mappedBy = "vendor")
+  List&lt;Product&gt; products = new ArrayList&lt;&gt;();
+}</code></pre>
+        </div>
+        <p class="caption">Vendor knows its products (one-to-many).</p>
+      </section>
+
+      <section>
+        <h2>Entity: Product</h2>
+        <div class="code-card">
+          <pre class="code-block"><code class="language-java">@Entity
+class Product {
+  @Id @GeneratedValue
+  Long id;
+  String name;
+  String category;
+
+  @ManyToOne
+  Vendor vendor;
+
+  @OneToOne(mappedBy = "product")
+  Stock stock;
+}</code></pre>
+        </div>
+        <p class="caption">Product points back to Vendor and has Stock.</p>
+      </section>
+
+      <section>
+        <h2>Entity: Stock</h2>
+        <div class="code-card">
+          <pre class="code-block"><code class="language-java">@Entity
+class Stock {
+  @Id @GeneratedValue
+  Long id;
+
+  @OneToOne
+  Product product;
+
+  int available;
+}</code></pre>
+        </div>
+        <p class="caption">Stock tracks quantity for a single product.</p>
+      </section>
+
+      <section class="scroll-slide">
+        <h2>Story: “All Products by Vendor”</h2>
+        <div class="card">
+          <ul>
+            <li>The UI needs products grouped by vendor.</li>
+            <li>Developer calls `vendorRepository.findAll()`.</li>
+            <li>`@OneToMany` on `Vendor.products` is LAZY by default.</li>
+            <li>Serializer walks each vendor and calls `vendor.getProducts()`.</li>
+            <li>Each call triggers another SQL query.</li>
+          </ul>
+        </div>
+        <div class="code-card" style="margin-top: 16px;">
+          <pre class="code-block"><code class="language-java">// Step 1: controller/service
+List&lt;Vendor&gt; vendors = vendorRepository.findAll();
+
+// Step 2: lazy collection (default)
+@OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)
+List&lt;Product&gt; products;
+
+// Step 3: serialization or view rendering
+for (Vendor v : vendors) {
+  List&lt;Product&gt; ps = v.getProducts(); // triggers SQL
+  response.add(v.getName(), ps);
+}</code></pre>
+        </div>
+        <p class="caption">The code looks clean, but the database sees a storm.</p>
+      </section>
+
+      <section>
+        <h2>What the DB Sees (N+1)</h2>
+        <div class="code-card">
+          <pre class="code-block"><code class="language-sql">-- 1 query
+SELECT * FROM vendors;
+
+-- N queries (one per vendor)
+SELECT * FROM products WHERE vendor_id = 1;
+SELECT * FROM products WHERE vendor_id = 2;
+SELECT * FROM products WHERE vendor_id = 3;
+...</code></pre>
+        </div>
+        <p class="caption">One request turns into many. That’s the N+1 problem.</p>
+      </section>
+
+      <section>
+        <h2>Why Bidirectional Helps</h2>
+        <div class="card">
+          <ul>
+            <li>Case 1: Show all products for a vendor (vendor → products).</li>
+            <li>Case 2: Show products in a category with vendor details (product → vendor).</li>
+          </ul>
+        </div>
+        <p class="caption">Same graph, different entry points.</p>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+    });
+  </script>
+</body>
+</html>
